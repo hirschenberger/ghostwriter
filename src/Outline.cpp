@@ -19,6 +19,9 @@
 
 #include <QListWidgetItem>
 #include <QVariant>
+#include <QTextDocument>
+
+#include "ProgressListWidgetItem.h"
 
 #include "Outline.h"
 
@@ -26,12 +29,12 @@ Q_DECLARE_METATYPE(QTextBlock)
 
 const int Outline::TEXT_BLOCK_ROLE = Qt::UserRole + 1;
 
-
 Outline::Outline(QWidget* parent)
     : QListWidget(parent)
 {
     connect(this, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(onOutlineHeadingSelected(QListWidgetItem*)));
     connect(this, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onOutlineHeadingSelected(QListWidgetItem*)));
+    setItemDelegate(new ProgressListWidgetItem(this));
     currentPosition = 0;
 }
 
@@ -106,7 +109,7 @@ void Outline::insertHeadingIntoOutline
     }
 
     headingText += text;
-
+    //headingText += " (" + QString::number((float)block.position() / block.document()->characterCount() * 100.0) + "%)";
     int row = findHeading(block.position(), false);
 
     if (row < 0)
@@ -145,7 +148,6 @@ void Outline::insertHeadingIntoOutline
             item = new QListWidgetItem();
             item->setText(headingText);
             item->setData(TEXT_BLOCK_ROLE, QVariant::fromValue(block));
-
             this->insertItem(this->count(), item);
         }
 

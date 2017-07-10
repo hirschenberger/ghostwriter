@@ -36,6 +36,8 @@ class Outline : public QListWidget
         Outline(QWidget* parent = 0);
         virtual ~Outline();
 
+        static const int TEXT_BLOCK_ROLE;
+
     signals:
         /**
          * Emitted when the user selects one of the headings in the outline
@@ -88,8 +90,6 @@ class Outline : public QListWidget
         void onOutlineHeadingSelected(QListWidgetItem* item);
 
     private:
-        static const int TEXT_BLOCK_ROLE;
-
         int currentPosition;
 
         /*
