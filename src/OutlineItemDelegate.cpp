@@ -6,18 +6,18 @@
 
 #include "Outline.h"
 
-#include "ProgressListWidgetItem.h"
+#include "OutlineItemDelegate.h"
 
 #include <iostream>
 
 Q_DECLARE_METATYPE(QTextBlock)
 
-ProgressListWidgetItem::ProgressListWidgetItem(QListWidget* parent) :
+OutlineItemDelegate::OutlineItemDelegate(QListWidget* parent) :
   QStyledItemDelegate(parent)
 {
 }
 
-void ProgressListWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+void OutlineItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
   painter->save();
 
@@ -37,11 +37,11 @@ void ProgressListWidgetItem::paint(QPainter *painter, const QStyleOptionViewItem
   QTextBlock block = index.data(Outline::TEXT_BLOCK_ROLE).value<QTextBlock>();
 
   double position = (double)block.position() / block.document()->characterCount();
-  double length =  (double)block.length() / block.document()->characterCount();
-  int width = option.widget->width() - 2;
+//  double length =  (double)block.length() / block.document()->characterCount();
+  int width = static_cast<const QListWidget*>(option.widget)->viewport()->width() - 2;
 
   int left = width * position;
-  int right = left + (width * length);
+//  int right = left + (width * length);
 
 
   painter->setPen(Qt::white);

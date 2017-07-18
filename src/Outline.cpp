@@ -21,7 +21,7 @@
 #include <QVariant>
 #include <QTextDocument>
 
-#include "ProgressListWidgetItem.h"
+#include "OutlineItemDelegate.h"
 
 #include "Outline.h"
 
@@ -34,7 +34,7 @@ Outline::Outline(QWidget* parent)
 {
     connect(this, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(onOutlineHeadingSelected(QListWidgetItem*)));
     connect(this, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onOutlineHeadingSelected(QListWidgetItem*)));
-    setItemDelegate(new ProgressListWidgetItem(this));
+    setItemDelegate(new OutlineItemDelegate(this));
     currentPosition = 0;
 }
 

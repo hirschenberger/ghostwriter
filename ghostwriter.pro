@@ -165,7 +165,7 @@ HEADERS += src/MainWindow.h \
     src/sundown/html.h \
     src/sundown/markdown.h \
     src/sundown/stack.h \
-    src/ProgressListWidgetItem.h
+    src/OutlineItemDelegate.h
 
 SOURCES += src/AppMain.cpp \
     src/MainWindow.cpp \
@@ -219,7 +219,7 @@ SOURCES += src/AppMain.cpp \
     src/sundown/html.c \
     src/sundown/markdown.c \
     src/sundown/stack.c \
-    src/ProgressListWidgetItem.cpp
+    src/OutlineItemDelegate.cpp
 
 # Allow for updating translations
 TRANSLATIONS = $$files(translations/ghostwriter_*.ts)
