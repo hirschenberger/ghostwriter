@@ -40,9 +40,9 @@ class MarkdownEditor;
  */
 class MarkdownHighlighter : public QSyntaxHighlighter
 {
-	Q_OBJECT
+        Q_OBJECT
 
-	public:
+    public:
         /**
          * Constructor.  Takes as a parameter the Markdown editor whose
          * TextDocument is to be highlighted.
@@ -58,7 +58,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter
          * Overridden method to highlight the given text for the current
          * text block in the document.
          */
-		void highlightBlock(const QString& text);
+        void highlightBlock(const QString& text);
 
         /**
          * Sets the dictionary to use for live spell checking.
@@ -80,16 +80,16 @@ class MarkdownHighlighter : public QSyntaxHighlighter
          */
         void setColorScheme
         (
-            const QColor& defaultTextColor,
-            const QColor& backgroundColor,
-            const QColor& markupColor,
-            const QColor& linkColor,
-            const QColor& headingColor,
-            const QColor& emphasisColor,
-            const QColor& blockquoteColor,
-            const QColor& codeColor,
-            const QColor& spellingErrorColor
-        );
+                const QColor& defaultTextColor,
+                const QColor& backgroundColor,
+                const QColor& markupColor,
+                const QColor& linkColor,
+                const QColor& headingColor,
+                const QColor& emphasisColor,
+                const QColor& blockquoteColor,
+                const QColor& codeColor,
+                const QColor& spellingErrorColor
+                );
 
         /**
          * Sets whether large heading sizes are enabled.
@@ -104,7 +104,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter
         /**
          * Sets the font family and point size.
          */
-		void setFont(const QString& fontFamily, const double fontSize);
+        void setFont(const QString& fontFamily, const double fontSize);
 
         /**
          * Sets whether live spell checking is enabled.
@@ -128,11 +128,15 @@ class MarkdownHighlighter : public QSyntaxHighlighter
          */
         void headingFound(int level, const QString& text, QTextBlock block);
 
+        void tasklistFound(Qt::CheckState checked, const QString& text, QTextBlock block);
+
         /**
          * Notifies listeners that a heading was discovered to have been removed
          * from the document at the given cursor position.
          */
         void headingRemoved(int position);
+
+        void tasklistRemoved(int position);
 
         /**
          * FOR INTERNAL USE ONLY
@@ -198,7 +202,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter
         QColor codeColor;
         QColor spellingErrorColor;
 
-		QTextCharFormat defaultFormat;
+        QTextCharFormat defaultFormat;
         bool applyStyleToMarkup[TokenLast];
         QColor colorForToken[TokenLast];
         bool emphasizeToken[TokenLast];
@@ -213,6 +217,7 @@ class MarkdownHighlighter : public QSyntaxHighlighter
 
         void applyFormattingForToken(const Token& token);
         void storeHeadingData(const Token& token, const QString& text);
+        void storeTasklistData(Qt::CheckState checked, const Token& token, const QString& text);
 
         /*
          * Returns true if the given QTextBlock userState indicates that the

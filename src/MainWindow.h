@@ -48,6 +48,7 @@ class QCheckBox;
 class QListWidget;
 class DocumentManager;
 class Outline;
+class Tasklist;
 class DocumentStatistics;
 class DocumentStatisticsWidget;
 class SessionStatistics;
@@ -64,7 +65,7 @@ class MainWindow : public QMainWindow
         MainWindow(const QString& filePath = QString(), QWidget* parent = 0);
         virtual ~MainWindow();
 
-    protected:
+  protected:
         QSize sizeHint() const;
         void resizeEvent(QResizeEvent* event);
         void moveEvent(QMoveEvent* event);
@@ -98,6 +99,7 @@ class MainWindow : public QMainWindow
         void showCheatSheetHud();
         void showDocumentStatisticsHud();
         void showSessionStatisticsHud();
+        void showTasklistHud();
         void onQuickRefGuideLinkClicked(const QUrl& url);
         void showAbout();
         void updateWordCount(int newWordCount);
@@ -142,9 +144,11 @@ class MainWindow : public QMainWindow
         QGraphicsColorizeEffect* fullScreenButtonColorEffect;
         HudWindow* outlineHud;
         Outline* outlineWidget;
+        Tasklist* tasklistWidget;
         HudWindow* cheatSheetHud;
         HudWindow* documentStatsHud;
         HudWindow* sessionStatsHud;
+        HudWindow* tasklistHud;
         QVector<HudWindow*> huds;
         QVector<QString> hudGeometryKeys;
         QVector<QString> hudOpenKeys;

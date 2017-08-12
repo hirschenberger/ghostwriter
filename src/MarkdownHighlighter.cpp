@@ -32,6 +32,7 @@
 #include <QApplication>
 #include <Qt>
 #include <QTextLayout>
+#include <QDebug>
 
 #include "MarkdownHighlighter.h"
 #include "MarkdownTokenizer.h"
@@ -44,22 +45,22 @@
 MarkdownHighlighter::MarkdownHighlighter(MarkdownEditor* editor)
     : QSyntaxHighlighter(editor),
       editor(editor),
-        tokenizer(NULL),
-        dictionary(DictionaryManager::instance().requestDictionary()),
-        spellCheckEnabled(false),
-        typingPaused(true),
-        useUndlerlineForEmphasis(false),
-        highlightLineBreaks(false),
-        inBlockquote(false),
-        defaultTextColor(Qt::black),
-        backgroundColor(Qt::white),
-        markupColor(Qt::black),
-        linkColor(Qt::blue),
-        headingColor(Qt::black),
-        emphasisColor(Qt::black),
-        blockquoteColor(Qt::black),
-        codeColor(Qt::black),
-        spellingErrorColor(Qt::red)
+      tokenizer(NULL),
+      dictionary(DictionaryManager::instance().requestDictionary()),
+      spellCheckEnabled(false),
+      typingPaused(true),
+      useUndlerlineForEmphasis(false),
+      highlightLineBreaks(false),
+      inBlockquote(false),
+      defaultTextColor(Qt::black),
+      backgroundColor(Qt::white),
+      markupColor(Qt::black),
+      linkColor(Qt::blue),
+      headingColor(Qt::black),
+      emphasisColor(Qt::black),
+      blockquoteColor(Qt::black),
+      codeColor(Qt::black),
+      spellingErrorColor(Qt::red)
 {
     setDocument(editor->document());
 
@@ -67,17 +68,19 @@ MarkdownHighlighter::MarkdownHighlighter(MarkdownEditor* editor)
     connect(editor, SIGNAL(typingPaused()), this, SLOT(onTypingPaused()));
     connect(this, SIGNAL(headingFound(int,QString,QTextBlock)), editor, SIGNAL(headingFound(int,QString,QTextBlock)));
     connect(this, SIGNAL(headingRemoved(int)), editor, SIGNAL(headingRemoved(int)));
+    connect(this, SIGNAL(tasklistFound(Qt::CheckState, QString, QTextBlock)), editor, SIGNAL(tasklistFound(Qt::CheckState, QString, QTextBlock)));
+    connect(this, SIGNAL(tasklistRemoved(int)), editor, SIGNAL(tasklistRemoved(int)));
 
     this->tokenizer = new MarkdownTokenizer();
 
     connect
-    (
-        this,
-        SIGNAL(highlightBlockAtPosition(int)),
-        this,
-        SLOT(onHighlightBlockAtPosition(int)),
-        Qt::QueuedConnection
-    );
+            (
+                this,
+                SIGNAL(highlightBlockAtPosition(int)),
+                this,
+                SLOT(onHighlightBlockAtPosition(int)),
+                Qt::QueuedConnection
+                );
 
     connect(editor->document(), SIGNAL(textBlockRemoved(const QTextBlock&)), this, SLOT(onTextBlockRemoved(const QTextBlock&)));
     
@@ -210,6 +213,14 @@ void MarkdownHighlighter::highlightBlock(const QString& text)
                     applyFormattingForToken(token);
                     storeHeadingData(token, text);
                     break;
+                case TokenTaskListUnchecked:
+                    applyFormattingForToken(token);
+                    storeTasklistData(Qt::Unchecked, token, text);
+                    break;
+                case TokenTaskListChecked:
+                    applyFormattingForToken(token);
+                    storeTasklistData(Qt::Checked, token, text);
+                    break;
                 case TokenUnknown:
                     qWarning("Highlighter found unknown token type in text block.");
                     break;
@@ -236,12 +247,21 @@ void MarkdownHighlighter::highlightBlock(const QString& text)
     // contains a heading.
     //
     if
-    (
-        isHeadingBlockState(lastState)
-        && !isHeadingBlockState(currentBlockState())
-    )
+            (
+             isHeadingBlockState(lastState)
+             && !isHeadingBlockState(currentBlockState())
+             )
     {
         emit headingRemoved(currentBlock().position());
+    }
+    
+    if
+            (
+             lastState == MarkdownStateTaskList
+             && currentBlockState() != MarkdownStateTaskList
+             )
+    {
+        emit tasklistRemoved(currentBlock().position());
     }
 }
 
@@ -269,16 +289,16 @@ void MarkdownHighlighter::decreaseFontSize()
 
 void MarkdownHighlighter::setColorScheme
 (
-    const QColor& defaultTextColor,
-    const QColor& backgroundColor,
-    const QColor& markupColor,
-    const QColor& linkColor,
-    const QColor& headingColor,
-    const QColor& emphasisColor,
-    const QColor& blockquoteColor,
-    const QColor& codeColor,
-    const QColor& spellingErrorColor
-)
+        const QColor& defaultTextColor,
+        const QColor& backgroundColor,
+        const QColor& markupColor,
+        const QColor& linkColor,
+        const QColor& headingColor,
+        const QColor& emphasisColor,
+        const QColor& blockquoteColor,
+        const QColor& codeColor,
+        const QColor& spellingErrorColor
+        )
 {
     this->defaultTextColor = defaultTextColor;
     this->backgroundColor = backgroundColor;
@@ -370,6 +390,10 @@ void MarkdownHighlighter::onTextBlockRemoved(const QTextBlock& block)
     {
         emit headingRemoved(block.position());
     }
+    else if(block.userState() == MarkdownStateTaskList)
+    {
+        emit tasklistRemoved(block.position());
+    }
 }
 
 void MarkdownHighlighter::spellCheck(const QString& text)
@@ -395,13 +419,13 @@ void MarkdownHighlighter::spellCheck(const QString& text)
             QTextCharFormat spellingErrorFormat = format(startIndex);
             spellingErrorFormat.setUnderlineColor(spellingErrorColor);
             spellingErrorFormat.setUnderlineStyle
-            (
-                (QTextCharFormat::UnderlineStyle)
-                QApplication::style()->styleHint
-                (
-                    QStyle::SH_SpellCheckUnderlineStyle
-                )
-            );
+                    (
+                        (QTextCharFormat::UnderlineStyle)
+                        QApplication::style()->styleHint
+                        (
+                            QStyle::SH_SpellCheckUnderlineStyle
+                            )
+                        );
 
             setFormat(startIndex, length, spellingErrorFormat);
         }
@@ -519,15 +543,15 @@ void MarkdownHighlighter::applyFormattingForToken(const Token& token)
         }
 
         format.setFontPointSize(format.fontPointSize()
-            + (qreal) fontSizeIncrease[tokenType]);
+                                + (qreal) fontSizeIncrease[tokenType]);
 
         QTextCharFormat markupFormat;
 
         if
-        (
-            applyStyleToMarkup[tokenType] &&
-            (!emphasizeToken[tokenType] || !useUndlerlineForEmphasis)
-        )
+                (
+                 applyStyleToMarkup[tokenType] &&
+                 (!emphasizeToken[tokenType] || !useUndlerlineForEmphasis)
+                 )
         {
             markupFormat = format;
         }
@@ -546,10 +570,10 @@ void MarkdownHighlighter::applyFormattingForToken(const Token& token)
         if (token.getOpeningMarkupLength() > 0)
         {
             if
-            (
-                (TokenBlockquote == token.getType())
-                && (BlockquoteStyleFancy == blockquoteStyle)
-            )
+                    (
+                     (TokenBlockquote == token.getType())
+                     && (BlockquoteStyleFancy == blockquoteStyle)
+                     )
             {
                 markupFormat.setBackground(QBrush(markupColor));
                 QString text = currentBlock().text();
@@ -559,57 +583,57 @@ void MarkdownHighlighter::applyFormattingForToken(const Token& token)
                     if (!text[i].isSpace())
                     {
                         setFormat
-                        (
-                            i,
-                            1,
-                            markupFormat
-                        );
+                                (
+                                    i,
+                                    1,
+                                    markupFormat
+                                    );
                     }
                 }
             }
             else
             {
                 setFormat
-                (
-                    token.getPosition(),
-                    token.getOpeningMarkupLength(),
-                    markupFormat
-                );
+                        (
+                            token.getPosition(),
+                            token.getOpeningMarkupLength(),
+                            markupFormat
+                            );
             }
         }
 
         setFormat
-        (
-            token.getPosition() + token.getOpeningMarkupLength(),
-            token.getLength()
-                - token.getOpeningMarkupLength()
-                - token.getClosingMarkupLength(),
-            format
-        );
+                (
+                    token.getPosition() + token.getOpeningMarkupLength(),
+                    token.getLength()
+                    - token.getOpeningMarkupLength()
+                    - token.getClosingMarkupLength(),
+                    format
+                    );
 
         if (token.getClosingMarkupLength() > 0)
         {
             setFormat
-            (
-                token.getPosition() + token.getLength()
-                    - token.getClosingMarkupLength(),
-                token.getClosingMarkupLength(),
-                markupFormat
-            );
+                    (
+                        token.getPosition() + token.getLength()
+                        - token.getClosingMarkupLength(),
+                        token.getClosingMarkupLength(),
+                        markupFormat
+                        );
         }
     }
     else
     {
         qWarning("MarkdownHighlighter::applyFormattingForToken() was passed in a "
-            "token of unknown type.");
+                 "token of unknown type.");
     }
 }
 
 void MarkdownHighlighter::storeHeadingData
 (
-    const Token& token,
-    const QString& text
-)
+        const Token& token,
+        const QString& text
+        )
 {
     int level;
     QString headingText;
@@ -624,13 +648,13 @@ void MarkdownHighlighter::storeHeadingData
         case TokenAtxHeading6:
             level = token.getType() - TokenAtxHeading1 + 1;
             headingText = text.mid
-                (
-                    token.getPosition()
+                    (
+                        token.getPosition()
                         + token.getOpeningMarkupLength(),
-                    token.getLength()
+                        token.getLength()
                         - token.getOpeningMarkupLength()
                         - token.getClosingMarkupLength()
-                ).trimmed();
+                        ).trimmed();
             break;
         case TokenSetextHeading1Line1:
             level = 1;
@@ -642,10 +666,10 @@ void MarkdownHighlighter::storeHeadingData
             break;
         default:
             qWarning
-            (
-                "MarkdownHighlighter::storeHeadingData() encountered unexpected token %d",
-                token.getType()
-            );
+                    (
+                        "MarkdownHighlighter::storeHeadingData() encountered unexpected token %d",
+                        token.getType()
+                        );
             return;
     }
 
@@ -654,14 +678,21 @@ void MarkdownHighlighter::storeHeadingData
     if (NULL == blockData)
     {
         blockData = new TextBlockData
-            (
-                (TextDocument*) document(),
-                this->currentBlock()
-            );
+                (
+                    (TextDocument*) document(),
+                    this->currentBlock()
+                    );
     }
 
     this->setCurrentBlockUserData(blockData);
     emit headingFound(level, headingText, this->currentBlock());
+}
+
+void MarkdownHighlighter::storeTasklistData(Qt::CheckState checked, const Token &token, const QString &text)
+{
+    QString stripped(text);
+    stripped.remove(0, 5);
+    emit tasklistFound(checked, stripped, this->currentBlock());
 }
 
 bool MarkdownHighlighter::isHeadingBlockState(int state) const
@@ -681,3 +712,4 @@ bool MarkdownHighlighter::isHeadingBlockState(int state) const
             return false;
     }
 }
+
