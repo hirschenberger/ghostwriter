@@ -31,7 +31,7 @@ void OutlineItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
 
   QString title = index.data(Qt::DisplayRole).toString();
 
-  QRect r = option.rect.adjusted(5, 0, 0, 0);
+  QRect r = option.rect.adjusted(5, 5, 0, 0);
   painter->drawText(r.left(), r.top(), r.width(), r.height(), Qt::AlignLeft, title, &r);
 
   QTextBlock block = index.data(Outline::TEXT_BLOCK_ROLE).value<QTextBlock>();
@@ -47,10 +47,10 @@ void OutlineItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
   painter->setPen(Qt::white);
   //painter->drawLine(0, r.bottom() + 4, left, r.bottom() + 4);
 
-  QPen line(option.palette.color(QPalette::AlternateBase));
+  QPen line(option.palette.color(QPalette::Foreground));
   //line.setWidth(2);
   painter->setPen(line);
-  painter->drawLine(left, r.bottom() + 1, left, r.bottom() + 4);
+  painter->drawLine(left, r.top() - 1, left, r.top() - 4);
 
   painter->restore();
 }

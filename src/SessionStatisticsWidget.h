@@ -56,7 +56,10 @@ class SessionStatisticsWidget : public AbstractStatisticsWidget
         /**
          * Sets the words per minute to display.
          */
-        void setWordsPerMinute(int percentage);
+        void setWordsPerMinute(int value);
+
+        void setWordsPerHour(int value);
+
 
         /**
          * Sets the time spent writing.
@@ -72,6 +75,7 @@ class SessionStatisticsWidget : public AbstractStatisticsWidget
         QLabel* wordCountLabel;
         QLabel* pageCountLabel;
         QLabel* wpmLabel;
+        QLabel* wphLabel;
         QLabel* writingTimeLabel;
         QLabel* idleTimePercentageLabel;
 

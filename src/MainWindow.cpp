@@ -265,6 +265,7 @@ MainWindow::MainWindow(const QString& filePath, QWidget* parent)
     connect(sessionStats, SIGNAL(wordCountChanged(int)), sessionStatsWidget, SLOT(setWordCount(int)));
     connect(sessionStats, SIGNAL(pageCountChanged(int)), sessionStatsWidget, SLOT(setPageCount(int)));
     connect(sessionStats, SIGNAL(wordsPerMinuteChanged(int)), sessionStatsWidget, SLOT(setWordsPerMinute(int)));
+    connect(sessionStats, SIGNAL(wordsPerHourChanged(int)), sessionStatsWidget, SLOT(setWordsPerHour(int)));
     connect(sessionStats, SIGNAL(writingTimeChanged(int)), sessionStatsWidget, SLOT(setWritingTime(int)));
     connect(sessionStats, SIGNAL(idleTimePercentageChanged(int)), sessionStatsWidget, SLOT(setIdleTime(int)));
     connect(editor, SIGNAL(typingPaused()), sessionStats, SLOT(onTypingPaused()));

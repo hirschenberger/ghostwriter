@@ -58,6 +58,8 @@ class SessionStatistics : public QObject
          */
         void wordsPerMinuteChanged(int value);
 
+        void wordsPerHourChanged(int value);
+
         /**
          * Emitted when writing time in this session changes.
          */
@@ -92,6 +94,7 @@ class SessionStatistics : public QObject
         unsigned long idleSeconds;
 
         int calculateWPM() const;
+        int calculateWPH() const;
 };
 
 #endif // SESSIONSTATISTICS_H

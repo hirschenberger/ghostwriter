@@ -51,6 +51,7 @@ void SessionStatistics::startNewSession(int initialWordCount)
     emit wordCountChanged(0);
     emit pageCountChanged(0);
     emit wordsPerMinuteChanged(0);
+    emit wordsPerHourChanged(0);
     emit writingTimeChanged(0);
     emit idleTimePercentageChanged(100);
 }
@@ -101,20 +102,17 @@ void SessionStatistics::onSessionTimerExpired()
     totalSeconds++;
 
     emit wordsPerMinuteChanged(calculateWPM());
+    emit wordsPerHourChanged(calculateWPH());
     emit writingTimeChanged(totalSeconds / 60);
     emit idleTimePercentageChanged((int) (((float)idleSeconds / (float)totalSeconds) * 100.0f));
 }
 
 int SessionStatistics::calculateWPM() const
 {
-    unsigned long delta = totalSeconds - idleSeconds;
+        return (int)(totalWordsWritten * 60.0f / totalSeconds);
+}
 
-    if (delta > 0)
-    {
-        return (int)(((float)totalWordsWritten * 60.0f) / (float)delta);
-    }
-    else
-    {
-        return totalWordsWritten;
-    }
+int SessionStatistics::calculateWPH() const
+{
+        return (int)(totalWordsWritten * 60.0f * 60.0f / totalSeconds);
 }

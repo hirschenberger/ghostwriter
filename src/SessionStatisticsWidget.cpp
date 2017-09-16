@@ -25,6 +25,7 @@ SessionStatisticsWidget::SessionStatisticsWidget(QWidget* parent) :
     wordCountLabel = addStatisticLabel(tr("Words Written:"), "0");
     pageCountLabel = addStatisticLabel(tr("Pages Written:"), LESS_THAN_ONE_STR, PAGE_STATISTIC_INFO_TOOLTIP_STR);
     wpmLabel = addStatisticLabel(tr("Average WPM:"), "0");
+    wphLabel = addStatisticLabel(tr("Average WPH:"), "0");
     writingTimeLabel = addStatisticLabel(tr("Total Time:"), LESS_THAN_ONE_MINUTE_STR);
     idleTimePercentageLabel = addStatisticLabel(tr("Idle Time:"), "100%");
 }
@@ -47,6 +48,11 @@ void SessionStatisticsWidget::setPageCount(int value)
 void SessionStatisticsWidget::setWordsPerMinute(int value)
 {
     setIntegerValueForLabel(wpmLabel, value);
+}
+
+void SessionStatisticsWidget::setWordsPerHour(int value)
+{
+    setIntegerValueForLabel(wphLabel, value);
 }
 
 void SessionStatisticsWidget::setWritingTime(int minutes)
