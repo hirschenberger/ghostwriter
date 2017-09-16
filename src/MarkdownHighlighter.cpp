@@ -32,7 +32,6 @@
 #include <QApplication>
 #include <Qt>
 #include <QTextLayout>
-#include <QDebug>
 
 #include "MarkdownHighlighter.h"
 #include "MarkdownTokenizer.h"
@@ -141,6 +140,9 @@ MarkdownHighlighter::MarkdownHighlighter(MarkdownEditor* editor)
     strongMarkup[TokenNumberedList] = true;
     strongMarkup[TokenBlockquote] = true;
     strongMarkup[TokenBulletPointList] = true;
+
+    heading1SetextRegex.setPattern("^===+\\s*$");
+    heading2SetextRegex.setPattern("^---+\\s*$");
 }
 
 MarkdownHighlighter::~MarkdownHighlighter()
@@ -247,10 +249,34 @@ void MarkdownHighlighter::highlightBlock(const QString& text)
     // contains a heading.
     //
     if
+    (
+        (
+            isHeadingBlockState(lastState)
+            && !isHeadingBlockState(currentBlockState())
+        )
+        ||
+        // The following check is for a rare corner case where if the setext
+        // markup (line #2 of the heading) is selected and then deleted with the
+        // cursor position starting at the end of the previous line (line #1 of
+        // of the heading), then the block state of the setext markup line is
+        // merged with the previous line (the heading text line, or line #1).
+        // This creates a state where the heading text line temporarily has the
+        // wrong block state until it is rehighlighted.  Thus, the lastState
+        // will be set to MarkdownStateSetextHeading1Line2 or
+        // MarkdownStateSetextHeading2Line2 in this situation.
+        //
+        (
             (
-             isHeadingBlockState(lastState)
-             && !isHeadingBlockState(currentBlockState())
-             )
+                (MarkdownStateSetextHeading1Line2 == lastState)
+                || (MarkdownStateSetextHeading2Line2 == lastState)
+            )
+            && !isHeadingBlockState(currentBlockState())
+            && (MarkdownStateSetextHeading1Line2 != currentBlockState())
+            && (MarkdownStateSetextHeading2Line2 != currentBlockState())
+            && !matchesHeading1SetextMarkup(text)
+            && !matchesHeading2SetextMarkup(text)
+        )
+    )
     {
         emit headingRemoved(currentBlock().position());
     }
@@ -713,3 +739,12 @@ bool MarkdownHighlighter::isHeadingBlockState(int state) const
     }
 }
 
+bool MarkdownHighlighter::matchesHeading1SetextMarkup(const QString& text) const
+{
+    return heading1SetextRegex.exactMatch(text);
+}
+
+bool MarkdownHighlighter::matchesHeading2SetextMarkup(const QString &text) const
+{
+    return heading2SetextRegex.exactMatch(text);
+}

@@ -271,7 +271,7 @@ MainWindow::MainWindow(const QString& filePath, QWidget* parent)
     connect(editor, SIGNAL(typingPaused()), sessionStats, SLOT(onTypingPaused()));
     connect(editor, SIGNAL(typingResumed()), sessionStats, SLOT(onTypingResumed()));
 
-    documentManager = new DocumentManager(editor, documentStats, sessionStats, this);
+    documentManager = new DocumentManager(editor, outlineWidget, documentStats, sessionStats, this);
     documentManager->setAutoSaveEnabled(appSettings->getAutoSaveEnabled());
     documentManager->setFileBackupEnabled(appSettings->getBackupFileEnabled());
     documentManager->setFileHistoryEnabled(appSettings->getFileHistoryEnabled());
@@ -786,6 +786,11 @@ void MainWindow::openPreferencesDialog()
 
 void MainWindow::toggleHtmlPreview(bool checked)
 {
+    htmlPreviewButton->blockSignals(true);
+    htmlPreviewMenuAction->blockSignals(true);
+
+    htmlPreviewButton->setChecked(checked);
+    htmlPreviewMenuAction->setChecked(checked);
     appSettings->setHtmlPreviewVisible(checked);
 
     if (checked)
@@ -801,6 +806,9 @@ void MainWindow::toggleHtmlPreview(bool checked)
     adjustEditorWidth(this->width());
 
     applyStatusBarStyle();
+
+    htmlPreviewButton->blockSignals(false);
+    htmlPreviewMenuAction->blockSignals(false);
 }
 
 void MainWindow::toggleHemingwayMode(bool checked)
@@ -829,90 +837,67 @@ void MainWindow::toggleFocusMode(bool checked)
 
 void MainWindow::toggleFullScreen(bool checked)
 {
-    // This method can be called either from the menu bar (View->Full Screen)
-    // or from the full screen toggle button on the status bar.  To keep their
-    // "checked/unchecked" states in sync, we have to determine who called
-    // this method (which "sender" triggered the event--the button or the
-    // menu option), and set the other's checked/unchecked state accordingly.
-    // Unfortunately, setting their checked states causes this slot to be
-    // triggered again recursively.  This means we have to use only one of the
-    // "senders" as the source of "truth" to determine whether to go
-    // full screen or to restore.  Thus, whenever the sender is the button in
-    // the status bar, we'll toggle full screen mode. Otherwise, we'll just
-    // set the button's state, knowing that this slot will be triggered again
-    // recursively in doing so and that the full screen mode will be toggled
-    // accordingly.
-    //
-
     static bool lastStateWasMaximized = false;
+
+    fullScreenButton->blockSignals(true);
+    fullScreenMenuAction->blockSignals(true);
+
+    fullScreenButton->setChecked(checked);
+    fullScreenMenuAction->setChecked(checked);
 
     if (this->isFullScreen() || !checked)
     {
-        if (this->sender() != fullScreenButton)
+        if (appSettings->getDisplayTimeInFullScreenEnabled())
         {
-            fullScreenButton->setChecked(false);
+            timeLabel->hide();
         }
+
+        // If the window had been maximized prior to entering
+        // full screen mode, then put the window back to
+        // to maximized.  Don't call showNormal(), as that
+        // doesn't restore the window to maximized.
+        //
+        if (lastStateWasMaximized)
+        {
+            showMaximized();
+        }
+        // Put the window back to normal (not maximized).
         else
         {
-            if (appSettings->getDisplayTimeInFullScreenEnabled())
-            {
-                timeLabel->hide();
-            }
+            showNormal();
+        }
 
-            fullScreenMenuAction->setChecked(false);
-
-            // If the window had been maximized prior to entering
-            // full screen mode, then put the window back to
-            // to maximized.  Don't call showNormal(), as that
-            // doesn't restore the window to maximized.
-            //
-            if (lastStateWasMaximized)
-            {
-                showMaximized();
-            }
-            // Put the window back to normal (not maximized).
-            else
-            {
-                showNormal();
-            }
-
-            if (appSettings->getHideMenuBarInFullScreenEnabled())
-            {
-                showMenuBar();
-            }
+        if (appSettings->getHideMenuBarInFullScreenEnabled())
+        {
+            showMenuBar();
         }
     }
     else
     {
-        if (this->sender() != fullScreenButton)
+        if (appSettings->getDisplayTimeInFullScreenEnabled())
         {
-            fullScreenButton->setChecked(true);
+            timeLabel->show();
+        }
+
+        if (this->isMaximized())
+        {
+            lastStateWasMaximized = true;
         }
         else
         {
-            if (appSettings->getDisplayTimeInFullScreenEnabled())
-            {
-                timeLabel->show();
-            }
+            lastStateWasMaximized = false;
+        }
 
-            if (this->isMaximized())
-            {
-                lastStateWasMaximized = true;
-            }
-            else
-            {
-                lastStateWasMaximized = false;
-            }
+        showFullScreen();
 
-            fullScreenMenuAction->setChecked(true);
-            showFullScreen();
-
-            if (appSettings->getHideMenuBarInFullScreenEnabled())
-            {
-                hideMenuBar();
-            }
+        if (appSettings->getHideMenuBarInFullScreenEnabled())
+        {
+            hideMenuBar();
         }
     }
+
+    fullScreenButton->blockSignals(false);
+    fullScreenMenuAction->blockSignals(false);
 }
 
 void MainWindow::toggleHideMenuBarInFullScreen(bool checked)
@@ -1397,7 +1382,7 @@ void MainWindow::copyHtml()
         if (c.hasSelection())
         {
             // Get only selected text from the document.
-            markdownText = c.selectedText();
+            markdownText = c.selection().toPlainText();
         }
         else
         {
@@ -1564,10 +1549,13 @@ void MainWindow::buildMenuBar()
     connect(fullScreenMenuAction, SIGNAL(toggled(bool)), this, SLOT(toggleFullScreen(bool)));
     viewMenu->addAction(fullScreenMenuAction);
 
+    htmlPreviewMenuAction = new QAction(tr("&Preview in HTML"), this);
+    htmlPreviewMenuAction->setCheckable(true);
+    htmlPreviewMenuAction->setChecked(appSettings->getHtmlPreviewVisible());
+    htmlPreviewMenuAction->setShortcut(QKeySequence("CTRL+M"));
+    connect(htmlPreviewMenuAction, SIGNAL(toggled(bool)), this, SLOT(toggleHtmlPreview(bool)));
+    viewMenu->addAction(htmlPreviewMenuAction);
 
-    QAction* previewAction = viewMenu->addAction(tr("&Preview in HTML"), this, SLOT(toggleHtmlPreview(bool)), QKeySequence("CTRL+M"));
-    previewAction->setCheckable(true);
-    previewAction->setChecked(appSettings->getHtmlPreviewVisible());
     viewMenu->addAction(tr("&Outline HUD"), this, SLOT(showOutlineHud()), QKeySequence("CTRL+L"));
     viewMenu->addAction(tr("&Cheat Sheet HUD"), this, SLOT(showCheatSheetHud()));
     viewMenu->addAction(tr("&Document Statistics HUD"), this, SLOT(showDocumentStatisticsHud()));
