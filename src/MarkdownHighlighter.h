@@ -30,7 +30,7 @@
 #include "MarkdownEditor.h"
 
 class QColor;
-class QRegExp;
+class QRegularExpression;
 class QString;
 class QTextCharFormat;
 class MarkdownEditor;
@@ -211,8 +211,8 @@ class MarkdownHighlighter : public QSyntaxHighlighter
         bool strikethroughToken[TokenLast];
         int fontSizeIncrease[TokenLast];
 
-        QRegExp heading1SetextRegex;
-        QRegExp heading2SetextRegex;
+        QRegularExpression heading1SetextRegex;
+        QRegularExpression heading2SetextRegex;
 
         void spellCheck(const QString& text);
         void setupTokenColors();

@@ -262,6 +262,13 @@ class DocumentManager : public QObject
         bool autoSaveEnabled;
 
         /*
+         * Boolean flag used to track if the prompt for the file having been
+         * externally modified is already displayed and should not be displayed
+         * again.
+         */
+        bool documentModifiedNotifVisible;
+
+        /*
          * Begins asynchronous save operation.  Called by save() and saveAs().
          */
         void saveFile();
