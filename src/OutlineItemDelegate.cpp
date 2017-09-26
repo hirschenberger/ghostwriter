@@ -33,16 +33,25 @@ void OutlineItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
   QString title = index.data(Qt::DisplayRole).toString();
   painter->drawText(r.left(), r.top(), r.width(), r.height(), Qt::AlignLeft, title, &r);
 
+  QTextBlock next  = index.sibling(index.row()+1, index.column()).data(Outline::TEXT_BLOCK_ROLE).value<QTextBlock>();
   QTextBlock block = index.data(Outline::TEXT_BLOCK_ROLE).value<QTextBlock>();
 
   double position = (double)block.position() / block.document()->characterCount();
+  double nextPos  = position;
+
+  if(next.isValid())
+      nextPos = (double)next.position() / next.document()->characterCount();
+
   int width = static_cast<const QListWidget*>(option.widget)->viewport()->width() - 2;
 
+  int right = width * nextPos;
   int left = width * position;
   painter->setPen(Qt::white);
 
   QPen line(option.palette.color(QPalette::Foreground));
   painter->setPen(line);
-  painter->drawLine(left, r.bottom()+1, left, r.bottom() - 2);
+  painter->drawLine(left, r.bottom()+1, left, r.bottom() - 1);
+  painter->drawLine(right, r.bottom()+1, right, r.bottom() - 1);
+  painter->drawLine(right, r.bottom(), left, r.bottom());
   painter->restore();
 }
