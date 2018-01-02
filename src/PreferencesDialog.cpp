@@ -438,6 +438,18 @@ QWidget* PreferencesDialog::initializeHudTab()
     connect(compositingCheckBox, SIGNAL(toggled(bool)), appSettings, SLOT(setDesktopCompositingEnabled(bool)));
     tabLayout->addRow(compositingCheckBox);
 
+    QCheckBox* hideHudsWhenTypingCheckBox = new QCheckBox(tr("Auto-hide HUD windows when typing"));
+    hideHudsWhenTypingCheckBox->setCheckable(true);
+    hideHudsWhenTypingCheckBox->setChecked(appSettings->getHideHudsWhenTypingEnabled());
+    connect(hideHudsWhenTypingCheckBox, SIGNAL(toggled(bool)), appSettings, SLOT(setHideHudsWhenTypingEnabled(bool)));
+    tabLayout->addRow(hideHudsWhenTypingCheckBox);
+
+    QCheckBox* hideHudsOnPreviewCheckBox = new QCheckBox(tr("Auto-hide HUD windows when previewing HTML"));
+    hideHudsOnPreviewCheckBox->setCheckable(true);
+    hideHudsOnPreviewCheckBox->setChecked(appSettings->getHideHudsOnPreviewEnabled());
+    connect(hideHudsOnPreviewCheckBox, SIGNAL(toggled(bool)), appSettings, SLOT(setHideHudsOnPreviewEnabled(bool)));
+    tabLayout->addRow(hideHudsOnPreviewCheckBox);
+
     QSlider* slider = new QSlider(Qt::Horizontal, this);
     slider->setMinimum(0);
     slider->setMaximum(255);

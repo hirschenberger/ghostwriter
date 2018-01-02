@@ -100,6 +100,11 @@ class MainWindow : public QMainWindow
         void showDocumentStatisticsHud();
         void showSessionStatisticsHud();
         void showTasklistHud();
+        void toggleOpenHudsVisibility();
+        void onHideHudsOnPreviewChanged(bool enabled);
+        void onHudClosed();
+        void onTypingPaused();
+        void onTypingResumed();
         void onQuickRefGuideLinkClicked(const QUrl& url);
         void showAbout();
         void updateWordCount(int newWordCount);
@@ -151,8 +156,11 @@ class MainWindow : public QMainWindow
         HudWindow* sessionStatsHud;
         HudWindow* tasklistHud;
         QVector<HudWindow*> huds;
+        QVector<HudWindow*> openHuds;
         QVector<QString> hudGeometryKeys;
         QVector<QString> hudOpenKeys;
+        bool openHudsVisible;
+        QAction* hideOpenHudsAction;
         DocumentStatistics* documentStats;
         DocumentStatisticsWidget* documentStatsWidget;
         SessionStatistics* sessionStats;
@@ -184,9 +192,19 @@ class MainWindow : public QMainWindow
             QActionGroup* actionGroup = 0
         );
 
+        HudWindow* createHudWindow
+        (
+            const QString& title,
+            QWidget* centralWidget,
+            const QString& geometrySettingsKey,
+            const QString& openSettingsKey
+        );
+
         void buildMenuBar();
         void buildStatusBar();
 
+        void showHud(HudWindow* hud);
+        void setOpenHudsVisibility(bool visible);
         void adjustEditorWidth(int width);
         void applyStatusBarStyle();
         void applyTheme();
