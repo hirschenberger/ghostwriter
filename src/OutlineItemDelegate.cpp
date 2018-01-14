@@ -56,7 +56,7 @@ void OutlineItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
   int left = width * position;
   painter->setPen(Qt::white);
 
-  QPen line(option.palette.color(QPalette::Foreground).darker(50*level));
+  QPen line(option.palette.color(QPalette::Foreground).darker(80*level));
   painter->setPen(line);
   painter->drawLine(left, r.bottom()+1, left, r.bottom() - 1);
   painter->drawLine(right, r.bottom()+1, right, r.bottom() - 1);
