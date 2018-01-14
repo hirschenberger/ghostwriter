@@ -37,6 +37,7 @@ class Outline : public QListWidget
         virtual ~Outline();
 
         static const int TEXT_BLOCK_ROLE;
+        static const int HEADING_LEVEL_ROLE;
 
     signals:
         /**
