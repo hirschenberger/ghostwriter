@@ -28,6 +28,8 @@
 Q_DECLARE_METATYPE(QTextBlock)
 
 const int Outline::TEXT_BLOCK_ROLE = Qt::UserRole + 1;
+const int Outline::HEADING_LEVEL_ROLE = Qt::UserRole + 2;
+
 
 Outline::Outline(QWidget* parent)
     : QListWidget(parent)
@@ -140,6 +142,7 @@ void Outline::insertHeadingIntoOutline
                 item = new QListWidgetItem();
                 item->setText(headingText);
                 item->setData(TEXT_BLOCK_ROLE, QVariant::fromValue(block));
+                item->setData(HEADING_LEVEL_ROLE, QVariant::fromValue(level));
                 this->insertItem(row, item);
             }
         }
@@ -148,6 +151,7 @@ void Outline::insertHeadingIntoOutline
             item = new QListWidgetItem();
             item->setText(headingText);
             item->setData(TEXT_BLOCK_ROLE, QVariant::fromValue(block));
+            item->setData(HEADING_LEVEL_ROLE, QVariant::fromValue(level));
             this->insertItem(this->count(), item);
         }
 

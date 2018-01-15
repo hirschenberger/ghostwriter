@@ -31,9 +31,17 @@ void OutlineItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
   }
 
   QString title = index.data(Qt::DisplayRole).toString();
+  int level = index.data(Outline::HEADING_LEVEL_ROLE).toInt();  
   painter->drawText(r.left(), r.top(), r.width(), r.height(), Qt::AlignLeft, title, &r);
 
-  QTextBlock next  = index.sibling(index.row()+1, index.column()).data(Outline::TEXT_BLOCK_ROLE).value<QTextBlock>();
+  QModelIndex nextIdx = index.sibling(index.row()+1, index.column());
+  
+  // find next block on same level
+  while(nextIdx.isValid() && nextIdx.data(Outline::HEADING_LEVEL_ROLE).toInt() != level) {
+    nextIdx = nextIdx.sibling(nextIdx.row()+1, index.column());
+  }
+
+  QTextBlock next = nextIdx.data(Outline::TEXT_BLOCK_ROLE).value<QTextBlock>();
   QTextBlock block = index.data(Outline::TEXT_BLOCK_ROLE).value<QTextBlock>();
 
   double position = (double)block.position() / block.document()->characterCount();
@@ -48,7 +56,7 @@ void OutlineItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& o
   int left = width * position;
   painter->setPen(Qt::white);
 
-  QPen line(option.palette.color(QPalette::Foreground));
+  QPen line(option.palette.color(QPalette::Foreground).darker(80*level));
   painter->setPen(line);
   painter->drawLine(left, r.bottom()+1, left, r.bottom() - 1);
   painter->drawLine(right, r.bottom()+1, right, r.bottom() - 1);

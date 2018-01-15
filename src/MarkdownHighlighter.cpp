@@ -65,7 +65,7 @@ MarkdownHighlighter::MarkdownHighlighter(MarkdownEditor* editor)
 
     connect(editor, SIGNAL(typingResumed()), this, SLOT(onTypingResumed()));
     connect(editor, SIGNAL(typingPaused()), this, SLOT(onTypingPaused()));
-    connect(editor, SIGNAL(cursorPositionChanged()), this, SLOT(onCursorPositionChanged()));
+    //connect(editor, SIGNAL(cursorPositionChanged()), this, SLOT(onCursorPositionChanged()));
     connect(this, SIGNAL(headingFound(int,QString,QTextBlock)), editor, SIGNAL(headingFound(int,QString,QTextBlock)));
     connect(this, SIGNAL(headingRemoved(int)), editor, SIGNAL(headingRemoved(int)));
     connect(this, SIGNAL(tasklistFound(Qt::CheckState, QString, QTextBlock)), editor, SIGNAL(tasklistFound(Qt::CheckState, QString, QTextBlock)));
